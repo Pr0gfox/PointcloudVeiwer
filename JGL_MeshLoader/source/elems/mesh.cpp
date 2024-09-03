@@ -25,43 +25,25 @@ namespace nelems
 
   bool Mesh::load(const std::string& filepath)
   {
-    const uint32_t cMeshImportFlags =
-      aiProcess_CalcTangentSpace |
-      aiProcess_Triangulate |
-      aiProcess_SortByPType |
-      aiProcess_GenNormals |
-      aiProcess_GenUVCoords |
-      aiProcess_OptimizeMeshes |
-      aiProcess_ValidateDataStructure;
-
-    Assimp::Importer Importer;
-
-    const aiScene* pScene = Importer.ReadFile(filepath.c_str(),
-      cMeshImportFlags);
-
-    if (pScene && pScene->HasMeshes())
+    // if (VALIDFILE)
     {
       mVertexIndices.clear();
       mVertices.clear();
 
-      auto* mesh = pScene->mMeshes[0];
-
-      uint32_t sumVertexIndecies = 0;
-      uint32_t prevSumVertexIndecies = 0;
-      
       // Vertecies of a unit cube
       // TODO: This should be a const probably
       #define UNIT_CUBE_NUM_VERTECIES 8U
       #define UNIT_CUBE_NUM_FACES     12U
+      #define MARKER_HALF_SIZE        0.1
       std::array<VertexHolder, UNIT_CUBE_NUM_VERTECIES> unitCubeVertecies({
-          VertexHolder{ glm::vec3{-1, -1, -1}, glm::vec3{-1, -1, -1} },
-          VertexHolder{ glm::vec3{-1, -1,  1}, glm::vec3{-1, -1,  1} },
-          VertexHolder{ glm::vec3{-1,  1, -1}, glm::vec3{-1,  1, -1} },
-          VertexHolder{ glm::vec3{-1,  1,  1}, glm::vec3{-1,  1,  1} },
-          VertexHolder{ glm::vec3{ 1, -1, -1}, glm::vec3{ 1, -1, -1} },
-          VertexHolder{ glm::vec3{ 1, -1,  1}, glm::vec3{ 1, -1,  1} },
-          VertexHolder{ glm::vec3{ 1,  1, -1}, glm::vec3{ 1,  1, -1} },
-          VertexHolder{ glm::vec3{ 1,  1,  1}, glm::vec3{ 1,  1,  1} }
+          VertexHolder{ glm::vec3{-MARKER_HALF_SIZE, -MARKER_HALF_SIZE, -MARKER_HALF_SIZE}, glm::vec3{-MARKER_HALF_SIZE, -MARKER_HALF_SIZE, -MARKER_HALF_SIZE} },
+          VertexHolder{ glm::vec3{-MARKER_HALF_SIZE, -MARKER_HALF_SIZE,  MARKER_HALF_SIZE}, glm::vec3{-MARKER_HALF_SIZE, -MARKER_HALF_SIZE,  MARKER_HALF_SIZE} },
+          VertexHolder{ glm::vec3{-MARKER_HALF_SIZE,  MARKER_HALF_SIZE, -MARKER_HALF_SIZE}, glm::vec3{-MARKER_HALF_SIZE,  MARKER_HALF_SIZE, -MARKER_HALF_SIZE} },
+          VertexHolder{ glm::vec3{-MARKER_HALF_SIZE,  MARKER_HALF_SIZE,  MARKER_HALF_SIZE}, glm::vec3{-MARKER_HALF_SIZE,  MARKER_HALF_SIZE,  MARKER_HALF_SIZE} },
+          VertexHolder{ glm::vec3{ MARKER_HALF_SIZE, -MARKER_HALF_SIZE, -MARKER_HALF_SIZE}, glm::vec3{ MARKER_HALF_SIZE, -MARKER_HALF_SIZE, -MARKER_HALF_SIZE} },
+          VertexHolder{ glm::vec3{ MARKER_HALF_SIZE, -MARKER_HALF_SIZE,  MARKER_HALF_SIZE}, glm::vec3{ MARKER_HALF_SIZE, -MARKER_HALF_SIZE,  MARKER_HALF_SIZE} },
+          VertexHolder{ glm::vec3{ MARKER_HALF_SIZE,  MARKER_HALF_SIZE, -MARKER_HALF_SIZE}, glm::vec3{ MARKER_HALF_SIZE,  MARKER_HALF_SIZE, -MARKER_HALF_SIZE} },
+          VertexHolder{ glm::vec3{ MARKER_HALF_SIZE,  MARKER_HALF_SIZE,  MARKER_HALF_SIZE}, glm::vec3{ MARKER_HALF_SIZE,  MARKER_HALF_SIZE,  MARKER_HALF_SIZE} }
       });
 
       using triangle_t = std::array<uint32_t, 3U>;
@@ -81,20 +63,32 @@ namespace nelems
           triangle_t{ {1,4,5} }
       });
 
-      // Draw unit cube
-      {
-          // Add vertecies
-          for (const auto& vertex : unitCubeVertecies)
-          {
-              add_vertex(vertex);
-          }
+      // Draw army of unit cubes
+      uint32_t numCubes = 100000;
+      uint32_t sideLength = std::cbrt(numCubes);
 
-          // Add faces
-          for (const auto& face : unitCubeFaces)
+      for (uint32_t iCube = 0; iCube < numCubes; iCube++)
+      {
+          // Draw unit cube
           {
-              for (auto index : face)
+              // Add vertecies
+              for (const auto& vertex : unitCubeVertecies)
               {
-                  add_vertex_index(index);
+                  add_vertex(VertexHolder{
+                      glm::vec3{
+                          vertex.mPos.x + (iCube % sideLength) * MARKER_HALF_SIZE * 2.5,
+                          vertex.mPos.y + ((iCube/ sideLength) % sideLength) * MARKER_HALF_SIZE * 2.5,
+                          vertex.mPos.z + (iCube / sideLength / sideLength) * MARKER_HALF_SIZE * 2.5},
+                      vertex.mNormal });
+              }
+
+              // Add faces
+              for (const auto& face : unitCubeFaces)
+              {
+                  for (auto index : face)
+                  {
+                      add_vertex_index(index + iCube * UNIT_CUBE_NUM_VERTECIES);
+                  }
               }
           }
       }
