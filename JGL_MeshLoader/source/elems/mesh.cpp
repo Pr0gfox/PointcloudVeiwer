@@ -7,6 +7,8 @@
 
 #include "render/opengl_buffer_manager.h"
 
+#include <array>
+
 namespace nelems
 {
   void Mesh::init()
@@ -44,21 +46,57 @@ namespace nelems
 
       auto* mesh = pScene->mMeshes[0];
 
-      for (uint32_t i = 0; i < mesh->mNumVertices; i++)
+      uint32_t sumVertexIndecies = 0;
+      uint32_t prevSumVertexIndecies = 0;
+      
+      // Vertecies of a unit cube
+      // TODO: This should be a const probably
+      #define UNIT_CUBE_NUM_VERTECIES 8U
+      #define UNIT_CUBE_NUM_FACES     12U
+      std::array<VertexHolder, UNIT_CUBE_NUM_VERTECIES> unitCubeVertecies({
+          VertexHolder{ glm::vec3{-1, -1, -1}, glm::vec3{-1, -1, -1} },
+          VertexHolder{ glm::vec3{-1, -1,  1}, glm::vec3{-1, -1,  1} },
+          VertexHolder{ glm::vec3{-1,  1, -1}, glm::vec3{-1,  1, -1} },
+          VertexHolder{ glm::vec3{-1,  1,  1}, glm::vec3{-1,  1,  1} },
+          VertexHolder{ glm::vec3{ 1, -1, -1}, glm::vec3{ 1, -1, -1} },
+          VertexHolder{ glm::vec3{ 1, -1,  1}, glm::vec3{ 1, -1,  1} },
+          VertexHolder{ glm::vec3{ 1,  1, -1}, glm::vec3{ 1,  1, -1} },
+          VertexHolder{ glm::vec3{ 1,  1,  1}, glm::vec3{ 1,  1,  1} }
+      });
+
+      using triangle_t = std::array<uint32_t, 3U>;
+
+      std::array<triangle_t, UNIT_CUBE_NUM_FACES> unitCubeFaces({
+          triangle_t{ {0,2,4} },
+          triangle_t{ {2,4,6} },
+          triangle_t{ {0,1,2} },
+          triangle_t{ {1,2,3} },
+          triangle_t{ {1,3,5} },
+          triangle_t{ {3,5,7} },
+          triangle_t{ {4,5,6} },
+          triangle_t{ {5,6,7} },
+          triangle_t{ {2,3,6} },
+          triangle_t{ {3,6,7} },
+          triangle_t{ {0,1,4} },
+          triangle_t{ {1,4,5} }
+      });
+
+      // Draw unit cube
       {
-        VertexHolder vh;
-        vh.mPos = { mesh->mVertices[i].x, mesh->mVertices[i].y ,mesh->mVertices[i].z };
-        vh.mNormal = { mesh->mNormals[i].x, mesh->mNormals[i].y ,mesh->mNormals[i].z };
+          // Add vertecies
+          for (const auto& vertex : unitCubeVertecies)
+          {
+              add_vertex(vertex);
+          }
 
-        add_vertex(vh);
-      }
-
-      for (size_t i = 0; i < mesh->mNumFaces; i++)
-      {
-        aiFace face = mesh->mFaces[i];
-
-        for (size_t j = 0; j < face.mNumIndices; j++)
-          add_vertex_index(face.mIndices[j]);
+          // Add faces
+          for (const auto& face : unitCubeFaces)
+          {
+              for (auto index : face)
+              {
+                  add_vertex_index(index);
+              }
+          }
       }
 
       init();
