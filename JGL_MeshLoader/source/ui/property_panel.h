@@ -18,7 +18,7 @@ namespace nui
       mCurrentFile = "< ... >";
 
       mFileDialog.SetTitle("Open mesh");
-      mFileDialog.SetFileFilters({ ".fbx", ".obj" });
+      mFileDialog.SetFileFilters({ ".csv" });
     }
 
     void render(nui::SceneView* mScene);
