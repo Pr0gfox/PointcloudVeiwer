@@ -27,7 +27,13 @@ namespace nelems
 
   bool Mesh::load(const std::string& filepath)
   {
-    csv::CSVReader reader(filepath);
+    csv::CSVFormat format;
+    format.delimiter(',')
+        .quote('~')
+        .quote(false)
+        .trim({ ' ', '\"' })
+        .header_row(1);
+    csv::CSVReader reader(filepath, format);
 
 
     // TODO: Check necessary CSV field names as a sanity check
@@ -82,10 +88,9 @@ namespace nelems
             add_vertex(VertexHolder{
                 glm::vec3{
                     vertex.mPos.x + row["Points_m_XYZ:0"].get<float>(),
-                    vertex.mPos.y + row[" \"Points_m_XYZ:2\""].get<float>(),
-                    vertex.mPos.z - row[" \"Points_m_XYZ:1\""].get<float>()
+                    vertex.mPos.y + row["Points_m_XYZ:2"].get<float>(),
+                    vertex.mPos.z - row["Points_m_XYZ:1"].get<float>()
                 },
-                // TODO: Strip quotation marks and whitespaces
                 vertex.mNormal
             });
         }
