@@ -1,0 +1,3 @@
+[submodule "JGL_MeshLoader/libs/LidarSimplifier"]
+	path = JGL_MeshLoader/libs/LidarSimplifier
+	url = https://github.com/Pr0gfox/LidarSimplifier.git
